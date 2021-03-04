@@ -163,14 +163,14 @@ class _MessageListViewState extends State<MessageListView> {
                     DateTime previousDate = currentDate ?? messageDate;
                     if (currentDate == null) {
                       // 如果消息时间和当前时间相差大于1天就格式化成带日期的时间
-                      if (messageDate.difference(DateTime.now()).inDays != 0) {
+                      var now = DateTime.now();
+                      if (messageDate.day - now.day != 0) {
                         _dateFormat = DateFormat("MM-dd HH:mm");
                       }
                       currentDate = messageDate;
                       showDate =
                           !widget.inverted || widget.messages.length == 1;
-                    } else if (currentDate.difference(messageDate).inDays !=
-                        0) {
+                    } else if (currentDate.day - messageDate.day != 0) {
                       // 如果消息时间和当前时间相差大于1天就格式化成带日期的时间
                       _dateFormat = DateFormat("MM-dd HH:mm");
                       showDate = true;
@@ -187,10 +187,6 @@ class _MessageListViewState extends State<MessageListView> {
                         widget.inverted) {
                       showDate = true;
                     } else {
-                      print("else");
-                      print("$currentDate");
-                      print("$_previousDate");
-                      print("$messageDate");
                       showDate = false;
                     }
 

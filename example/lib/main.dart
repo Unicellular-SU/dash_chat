@@ -45,6 +45,19 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    messages.add(ChatMessage(
+        text: "1",
+        user: user,
+        createdAt: DateTime.fromMillisecondsSinceEpoch(1614765625406)));
+    messages.add(ChatMessage(
+        text: "2",
+        user: user,
+        createdAt: DateTime.fromMillisecondsSinceEpoch(1614765677270)));
+    messages.add(ChatMessage(
+        text: "3",
+        user: user,
+        createdAt: DateTime.fromMillisecondsSinceEpoch(1614829045082)));
+    messages.add(ChatMessage(text: "4", user: otherUser));
   }
 
   void systemMessage() {
