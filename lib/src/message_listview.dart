@@ -37,44 +37,44 @@ class MessageListView extends StatefulWidget {
   final double avatarMaxSize;
   final BoxDecoration Function(ChatMessage, bool) messageDecorationBuilder;
 
-  MessageListView(
-      {this.showLoadEarlierWidget,
-      this.avatarMaxSize,
-      this.shouldShowLoadEarlier,
-      this.constraints,
-      this.onLoadEarlier,
-      this.defaultLoadCallback,
-      this.messageContainerPadding =
-          const EdgeInsets.only(top: 10.0, right: 10.0, left: 10.0),
-      this.scrollController,
-      this.parsePatterns = const [],
-      this.messageContainerDecoration,
-      this.messages,
-      this.user,
-      this.showuserAvatar,
-      this.dateFormat,
-      this.timeFormat,
-      this.showAvatarForEverMessage,
-      this.inverted,
-      this.onLongPressAvatar,
-      this.onLongPressMessage,
-      this.onPressAvatar,
-      this.renderAvatarOnTop,
-      this.messageBuilder,
-      this.renderMessageFooter,
-      this.avatarBuilder,
-      this.dateBuilder,
-      this.messageImageBuilder,
-      this.messageTextBuilder,
-      this.messageTimeBuilder,
-      this.changeVisible,
-      this.visible,
-      this.showLoadMore,
-      this.messageButtonsBuilder,
-      this.messagePadding = const EdgeInsets.all(8.0),
-      this.textBeforeImage = true,
-      this.messageDecorationBuilder,
-      });
+  MessageListView({
+    this.showLoadEarlierWidget,
+    this.avatarMaxSize,
+    this.shouldShowLoadEarlier,
+    this.constraints,
+    this.onLoadEarlier,
+    this.defaultLoadCallback,
+    this.messageContainerPadding =
+        const EdgeInsets.only(top: 10.0, right: 10.0, left: 10.0),
+    this.scrollController,
+    this.parsePatterns = const [],
+    this.messageContainerDecoration,
+    this.messages,
+    this.user,
+    this.showuserAvatar,
+    this.dateFormat,
+    this.timeFormat,
+    this.showAvatarForEverMessage,
+    this.inverted,
+    this.onLongPressAvatar,
+    this.onLongPressMessage,
+    this.onPressAvatar,
+    this.renderAvatarOnTop,
+    this.messageBuilder,
+    this.renderMessageFooter,
+    this.avatarBuilder,
+    this.dateBuilder,
+    this.messageImageBuilder,
+    this.messageTextBuilder,
+    this.messageTimeBuilder,
+    this.changeVisible,
+    this.visible,
+    this.showLoadMore,
+    this.messageButtonsBuilder,
+    this.messagePadding = const EdgeInsets.all(8.0),
+    this.textBeforeImage = true,
+    this.messageDecorationBuilder,
+  });
 
   @override
   _MessageListViewState createState() => _MessageListViewState();
@@ -82,6 +82,10 @@ class MessageListView extends StatefulWidget {
 
 class _MessageListViewState extends State<MessageListView> {
   double previousPixelPostion = 0.0;
+
+  DateFormat _dateFormat = DateFormat("HH:mm");
+
+  DateTime _previousDate;
 
   bool scrollNotificationFunc(ScrollNotification scrollNotification) {
     double bottom =
@@ -149,27 +153,44 @@ class _MessageListViewState extends State<MessageListView> {
                       last = true;
                     }
 
-                    DateTime messageDate = DateTime(
-                      widget.messages[i].createdAt.year,
-                      widget.messages[i].createdAt.month,
-                      widget.messages[i].createdAt.day,
-                    );
+                    DateTime messageDate = _getMessageTime(widget.messages[i]);
+                    // 上一条消息时间
+                    _previousDate = i > 0
+                        ? _getMessageTime(widget.messages[i - 1])
+                        : messageDate;
 
                     // Needed for inverted list
                     DateTime previousDate = currentDate ?? messageDate;
-
                     if (currentDate == null) {
+                      // 如果消息时间和当前时间相差大于1天就格式化成带日期的时间
+                      if (messageDate.difference(DateTime.now()).inDays != 0) {
+                        _dateFormat = DateFormat("MM-dd HH:mm");
+                      }
                       currentDate = messageDate;
                       showDate =
                           !widget.inverted || widget.messages.length == 1;
                     } else if (currentDate.difference(messageDate).inDays !=
                         0) {
+                      // 如果消息时间和当前时间相差大于1天就格式化成带日期的时间
+                      _dateFormat = DateFormat("MM-dd HH:mm");
                       showDate = true;
+                      currentDate = messageDate;
+                    } else if (messageDate
+                            .difference(_previousDate)
+                            .inMinutes >=
+                        1) {
+                      // 如果上一条消息时间和当前消息相差5分钟就变成不带日期的时间
+                      showDate = true;
+                      _dateFormat = DateFormat("HH:mm");
                       currentDate = messageDate;
                     } else if (i == widget.messages.length - 1 &&
                         widget.inverted) {
                       showDate = true;
                     } else {
+                      print("else");
+                      print("$currentDate");
+                      print("$_previousDate");
+                      print("$messageDate");
                       showDate = false;
                     }
 
@@ -184,7 +205,7 @@ class _MessageListViewState extends State<MessageListView> {
                               date:
                                   widget.inverted ? previousDate : currentDate,
                               customDateBuilder: widget.dateBuilder,
-                              dateFormat: widget.dateFormat,
+                              dateFormat: widget.dateFormat ?? _dateFormat,
                             ),
                           Padding(
                             padding: EdgeInsets.only(
@@ -235,8 +256,7 @@ class _MessageListViewState extends State<MessageListView> {
                                                       ListTile(
                                                         leading: Icon(
                                                             Icons.content_copy),
-                                                        title: Text(
-                                                            "Copy to clipboard"),
+                                                        title: Text("复制这条消息"),
                                                         onTap: () {
                                                           Clipboard.setData(
                                                               ClipboardData(
@@ -257,11 +277,12 @@ class _MessageListViewState extends State<MessageListView> {
                                         ? widget
                                             .messageBuilder(widget.messages[i])
                                         : Align(
-                                            alignment:
-                                                widget.messages[i].user.uid ==
-                                                        widget.user.uid
-                                                    ? AlignmentDirectional.centerEnd
-                                                    : AlignmentDirectional.centerStart,
+                                            alignment: widget
+                                                        .messages[i].user.uid ==
+                                                    widget.user.uid
+                                                ? AlignmentDirectional.centerEnd
+                                                : AlignmentDirectional
+                                                    .centerStart,
                                             child: MessageContainer(
                                               messagePadding:
                                                   widget.messagePadding,
@@ -287,8 +308,8 @@ class _MessageListViewState extends State<MessageListView> {
                                                   widget.messageButtonsBuilder,
                                               textBeforeImage:
                                                   widget.textBeforeImage,
-                                              messageDecorationBuilder:
-                                                  widget.messageDecorationBuilder,
+                                              messageDecorationBuilder: widget
+                                                  .messageDecorationBuilder,
                                             ),
                                           ),
                                   ),
@@ -355,6 +376,17 @@ class _MessageListViewState extends State<MessageListView> {
           ),
         ),
       ),
+    );
+  }
+
+  DateTime _getMessageTime(ChatMessage message) {
+    return DateTime(
+      message.createdAt.year,
+      message.createdAt.month,
+      message.createdAt.day,
+      message.createdAt.hour,
+      message.createdAt.minute,
+      message.createdAt.second,
     );
   }
 }

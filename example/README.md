@@ -1,6 +1,6 @@
-# example
+# aliplayer_example
 
-A new Flutter project.
+Demonstrates how to use the aliplayer plugin.
 
 ## Getting Started
 
