@@ -178,7 +178,7 @@ class _MessageListViewState extends State<MessageListView> {
                     } else if (messageDate
                             .difference(_previousDate)
                             .inMinutes >=
-                        1) {
+                        5) {
                       // 如果上一条消息时间和当前消息相差5分钟就变成不带日期的时间
                       showDate = true;
                       _dateFormat = DateFormat("HH:mm");
